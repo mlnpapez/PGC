@@ -1,17 +1,17 @@
 import os
-import numpy as np
 import torch
 import pandas as pd
 
 from pylatex import Document, TikZ, TikZNode, TikZOptions, NoEscape
 
-from utils.datasets import MOLECULAR_DATASETS
-from utils.conditional import create_conditional_grid, evaluate_conditional
-from utils.plot import plot_grid_conditional, plot_grid_unconditional
+from utils.datasets import MOLECULAR_DATASETS, BASE_DIR
+from utils.plot import plot_grid_unconditional
 
-from rdkit import Chem, rdBase
+from rdkit import rdBase
 rdBase.DisableLog("rdApp.error")
 
+
+EVALUATION_DIR = f'{BASE_DIR}gs0/eval/'
 
 ORDER_NAMES = {
     'bft': 'BFT',
@@ -116,10 +116,8 @@ def find_best(evaluation_dir, dataset, model, metric='sam_fcd_val', maximize=Fal
     return f_frame
 
 def create_grid(df_paths, dataset, model_name, nrows=30, ncols=2, seed=0):
-
     atom_list = MOLECULAR_DATASETS[dataset]['atom_list']
     max_atoms = MOLECULAR_DATASETS[dataset]['max_atoms']
-    max_types = MOLECULAR_DATASETS[dataset]['max_types']
 
     for backend in BACKEND_NAMES.keys():
         for order in ORDER_NAMES.keys():
@@ -129,7 +127,7 @@ def create_grid(df_paths, dataset, model_name, nrows=30, ncols=2, seed=0):
             path_model = df_paths.loc[(backend, order)]['model_path']
             model = torch.load(path_model, weights_only=False)
 
-            dname = f'gs0/eval/unconditional/{dataset}/{model_name}/{backend}/'
+            dname = f'results/gridsearch_unco_grid/{dataset}/{model_name}/{backend}/'
             fname = f'{dataset}_{model_name}_{backend}_{order}'
             os.makedirs(dname, exist_ok=True)
 
@@ -138,7 +136,6 @@ def create_grid(df_paths, dataset, model_name, nrows=30, ncols=2, seed=0):
 
 
 def latexify_grid(dataset, model_name, backend):
-
     doc = Document(documentclass='standalone', document_options=('preview'), geometry_options={'margin': '0cm'})
     doc.packages.append(NoEscape(r'\usetikzlibrary{positioning}'))
     doc.packages.append(NoEscape(r'\usepackage{svg}'))
@@ -151,7 +148,7 @@ def latexify_grid(dataset, model_name, backend):
             dname = f'plots/unconditional/{dataset}/{model_name}/{backend}/'
             fname = f'{dataset}_{model_name}_{backend}_{order}.svg'
             samples_path = f'{dname}{fname}'
-            
+
             pic.append(TikZNode(
                 text=f'\includesvg[width={m_width}px]{{{samples_path}}}',
                 options=TikZOptions({**previous_position, 'label': '{[yshift=0px, font=\large]{' + f'{order_clean}' '}}'}),
@@ -159,23 +156,16 @@ def latexify_grid(dataset, model_name, backend):
 
             previous_position = {'right': f'15 px of n{i}'}
 
-    doc.generate_tex(f'gs0/eval/unconditional/{dataset}_{model_name}_{backend}_grid')
+    doc.generate_tex(f'results/gridsearch_unco_grid/{dataset}_{model_name}_{backend}_grid')
 
 
 if __name__ == "__main__":
-    evaluation_dir = '/mnt/data/density_learning/pgc/gs0/eval/'
-
-    ### QM9 ###
-    path_frame = find_best(evaluation_dir, 'qm9', 'marg_sort')
+    path_frame = find_best(EVALUATION_DIR, 'qm9', 'marg_sort')
     create_grid(path_frame, 'qm9', 'marg_sort', seed=0)
-
     for backend in BACKEND_NAMES.keys():
         latexify_grid('qm9', 'marg_sort', backend)
 
-    ### ZINC250K ###
-    path_frame = find_best(evaluation_dir, 'zinc250k', 'marg_sort')
+    path_frame = find_best(EVALUATION_DIR, 'zinc250k', 'marg_sort')
     create_grid(path_frame, 'zinc250k', 'marg_sort', seed=0)
-
     for backend in BACKEND_NAMES.keys():
         latexify_grid('zinc250k', 'marg_sort', backend)
-

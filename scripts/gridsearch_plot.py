@@ -4,7 +4,7 @@ import pandas as pd
 from pylatex import Document, TikZ, NoEscape
 from utils.datasets import BASE_DIR
 
-EVALUATION_DIR = f'{BASE_DIR}gs/eval/'
+EVALUATION_DIR = f'{BASE_DIR}gs0/eval/'
 
 BACKEND_NAMES = {
     'btree': 'BT',

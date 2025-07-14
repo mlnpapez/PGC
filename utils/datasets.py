@@ -14,7 +14,7 @@ from scipy.sparse import csr_matrix
 from scipy.sparse.csgraph import breadth_first_order, depth_first_order, reverse_cuthill_mckee
 
 
-BASE_DIR = 'results/'
+BASE_DIR = '/mnt/data/density_learning/molspn/'
 
 MOLECULAR_DATASETS = {
     'qm9': {
