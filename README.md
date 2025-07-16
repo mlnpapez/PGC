@@ -76,14 +76,14 @@ This command will run the script in the background, submitting jobs to your SLUR
 
 After completing all the SLURM jobs, run the following command.
 ```
-python -m gridsearch_evaluate
+python -m scripts.gridsearch_evaluate
 ```
 It will produce a table comparing the PGC variants with the baselines (both in the `.pdf` and `.tex` formats).
 
 ## 4. Conditional Molecule Generation
 Run the following command to generate new molecules conditionally on a known molecule.
 ```
-python -m conditional_sampling
+python -m scripts.conditional_sampling
 ```
 To impose a known structure of the generated molecules, change `patt_smls` in `conditional_sampling.py`. Similarly, to select a model from which to generate the samples, change `model_path`.
 
